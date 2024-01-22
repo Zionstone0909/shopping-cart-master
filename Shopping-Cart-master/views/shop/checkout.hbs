@@ -1,0 +1,65 @@
+<div class="row">
+<div class="col-sm-6 col-md-4 offset-md-4 offset-sm-3">
+	<h1>Checkout</h1>
+	<h4>Your total: NGN{{totalPrice}}</h4>
+	<form id="paymentForm">
+		<div class="form-group">
+			<label for="email">Email Address</label>
+			<input type="text" name="email" id="email-address" class="form-control" required>
+		</div>
+		<div class="form-group">
+			<label for="name">Full Name</label>
+			<input type="text" name="name" id="name" class="form-control" required>
+		</div>
+		<div class="form-group">
+			<label for="address">Address</label>
+			<input type="text" name="address" id="address" class="form-control" required>
+		</div>
+		<div class="form-submit">
+			<button type="submit" class="btn btn-success" onclick="payWithPaystack()"> Pay </button>
+		</div>
+	<form>
+</div>
+<script src="https://js.paystack.co/v1/inline.js"></script> 
+<script>
+	//const email = {{{email}}}
+	const totalPrice = {{{totalPrice}}};
+	const paymentForm = document.getElementById('paymentForm');
+	paymentForm.addEventListener("submit", payWithPaystack, false);
+	function payWithPaystack(e) {
+	  e.preventDefault();
+	  let handler = PaystackPop.setup({
+	    key: 'pk_test_179f97255508e5575179d8a9b0ae206cfce03735', // Replace with your public key
+	    email: document.getElementById("email-address").value,
+	    amount: totalPrice *100,
+	    ref: 'Books'+Math.floor((Math.random() * 1000000000) + 1), // generates a pseudo-unique reference. Please replace with a reference you generated. Or remove the line entirely so our API will generate one for you
+	    // label: "Optional string that replaces customer email"
+	    metadata: {
+                   custom_fields: [
+                      {
+                          "display_name":"Full Name",
+      					  "variable_name":"name",
+      					  "value":document.getElementById("name").value
+                      },
+                      {
+                          "display_name":"Address",
+      					  "variable_name":"address",
+      					  "value":document.getElementById("address").value      				   }	  
+                   ]
+                   //metadata = JSON.stringify(metadata);
+                },
+	    onClose: function(){
+	    	window.location="http://localhost:5000/shopping-cart?transaction=cancel"
+	      alert('Window closed.');
+	    },
+	    callback: function(response){
+	      let message = 'Payment complete! Reference: ' + response.reference;
+	      alert(message);
+	      window.location = "http://localhost:5000/verify_transaction?reference=" + response.reference;
+
+
+	    }
+	  });
+	  handler.openIframe();
+	}
+</script>
